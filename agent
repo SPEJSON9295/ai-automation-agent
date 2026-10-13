@@ -1,0 +1,74 @@
+#!/data/data/com.termux/files/usr/bin/bash
+cd ~/ai-automation-agent || exit 1
+BASE="http://127.0.0.1:3000"
+
+start_server() {
+  if curl -fsS "$BASE/health" >/dev/null 2>&1; then
+    echo "Agent już działa."
+    return
+  fi
+  nohup node server.js >> server.log 2>&1 &
+  echo $! > server.pid
+  for i in $(seq 1 15); do
+    if curl -fsS "$BASE/health"; then
+      echo
+      echo "Agent działa w tle."
+      return
+    fi
+    sleep 1
+  done
+  echo "Błąd uruchomienia. Log:"
+  tail -30 server.log
+}
+
+case "$1" in
+  start) start_server ;;
+  stop)
+    if [ -f server.pid ]; then
+      kill "$(cat server.pid)" 2>/dev/null
+      rm -f server.pid
+    fi
+    echo "Wysłano polecenie zatrzymania."
+    ;;
+  restart)
+    if [ -f server.pid ]; then
+      kill "$(cat server.pid)" 2>/dev/null
+      rm -f server.pid
+      sleep 2
+    fi
+    start_server
+    ;;
+  status)
+    curl -s "$BASE/health"
+    echo
+    ;;
+  logs)
+    tail -n 40 server.log
+    ;;
+  research)
+    shift
+    MSG="Zrób research na temat $*"
+    ;;
+  command)
+    shift
+    MSG="$*"
+    ;;
+  *)
+    echo "Polecenia:"
+    echo "./agent start"
+    echo "./agent stop"
+    echo "./agent restart"
+    echo "./agent status"
+    echo "./agent logs"
+    echo './agent research "energia słoneczna"'
+    echo './agent command "Napisz artykuł o sztucznej inteligencji"'
+    exit 0
+    ;;
+esac
+
+if [ -n "${MSG:-}" ]; then
+  python3 -c 'import json,sys; print(json.dumps({"message":sys.argv[1]},ensure_ascii=False))' "$MSG" |
+    curl -s -X POST "$BASE/api/ai/command" \
+      -H "Content-Type: application/json" -d @-
+  echo
+fi
