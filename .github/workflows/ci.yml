@@ -1,0 +1,28 @@
+name: CI
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Start agent
+        run: |
+          node server.js > /tmp/agent.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:3000/health && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3000/health
+      - run: npm test
