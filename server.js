@@ -532,6 +532,7 @@ syncDraftsToQueue();
 function autoExportDrafts() {
   const dir = path.join(__dirname, 'output', 'drafts');
   const out = path.join(__dirname, 'output', 'exports');
+  fs.mkdirSync(dir, { recursive: true });
   fs.mkdirSync(out, { recursive: true });
   let exported = 0;
 
