@@ -406,6 +406,7 @@ app.post('/api/content/pipeline', async (req, res) => {
   }
 
   try {
+    const pipelineStartedAt = Date.now();
     const { topic, audience, style, words, language, sources } = parsed.data;
     const api = new URL(`https://${language}.wikipedia.org/w/api.php`);
     api.searchParams.set('action', 'query');
@@ -447,7 +448,7 @@ app.post('/api/content/pipeline', async (req, res) => {
         }
       ],
       temperature: 0.4
-    });
+    }, { timeout: 120000, maxRetries: 0 });
 
     const article = response.choices[0]?.message?.content?.trim();
     if (!article) throw new Error('Model zwrócił pusty artykuł.');
@@ -474,6 +475,7 @@ app.post('/api/content/pipeline', async (req, res) => {
       sources: evidence.map(item => ({ title: item.title, url: item.url })),
       file: `output/drafts/${filename}`,
       characters: article.length,
+      durationMs: Date.now() - pipelineStartedAt,
       article
     });
   } catch (error) {
