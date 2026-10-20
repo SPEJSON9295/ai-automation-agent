@@ -7,7 +7,7 @@ const path = require('path');
 const cron = require('node-cron');
 
 const app = express();
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '5mb' }));
 
 const ChatSchema = z.object({
   message: z.string().trim().min(1).max(12000),
