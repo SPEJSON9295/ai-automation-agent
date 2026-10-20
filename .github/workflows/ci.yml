@@ -17,12 +17,26 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Start agent
+      - name: Start agent and diagnose startup
+        env:
+          PORT: 3000
         run: |
           node server.js > /tmp/agent.log 2>&1 &
+          pid=$!
+          echo "Agent PID: $pid"
           for i in {1..30}; do
-            curl -fsS http://127.0.0.1:3000/health && break
+            if curl --silent --show-error --fail http://127.0.0.1:3000/health; then
+              echo
+              exit 0
+            fi
+            if ! kill -0 "$pid" 2>/dev/null; then
+              echo "Agent exited before health check."
+              cat /tmp/agent.log
+              exit 1
+            fi
             sleep 1
           done
-          curl -fsS http://127.0.0.1:3000/health
+          echo "Agent did not become healthy within 30 seconds."
+          cat /tmp/agent.log
+          exit 1
       - run: npm test
