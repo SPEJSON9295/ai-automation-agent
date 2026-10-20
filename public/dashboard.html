@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>AI Automation Agent</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#e8edf5;background:#10141c}
+*{box-sizing:border-box}body{margin:0 auto;padding:18px;max-width:1000px}
+header,.card{background:#191f2b;border:1px solid #30394a;border-radius:14px;padding:18px;margin-bottom:14px}
+h1{font-size:24px;margin:0 0 8px}h2{font-size:18px;margin-top:0}
+small,.muted{color:#aab6c9}.status{font-weight:700;color:#8ee6ae}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{background:#5579e8;color:white;border:0;border-radius:9px;padding:11px 15px;font-weight:650;cursor:pointer}
+button:disabled{opacity:.5}input,textarea,select{width:100%;padding:11px;margin:6px 0 12px;background:#0f141d;border:1px solid #39445a;border-radius:8px;color:#fff}
+textarea{min-height:100px;resize:vertical}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0c1017;padding:12px;border-radius:8px;max-height:400px;overflow:auto}
+a{color:#9db8ff}label{font-size:14px;color:#c4cede}
+</style>
+</head>
+<body>
+<header>
+<h1>AI Automation Agent</h1>
+<div class="muted">Panel operacyjny · lokalny podgląd HTTP</div>
+<p id="status" class="status">Sprawdzanie serwera…</p>
+<nav>
+<button onclick="health()">Sprawdź serwer</button>
+<button onclick="queue()">Odśwież kolejkę</button>
+<button onclick="loadRoutes()">Pokaż API</button>
+</nav>
+</header>
+<div class="grid">
+<section class="card">
+<h2>💬 Czat AI</h2>
+<label>Wiadomość</label>
+<textarea id="message">Odpowiedz krótko po polsku: system działa.</textarea>
+<button onclick="chat()">Wyślij do AI</button>
+<pre id="chatResult">Odpowiedź pojawi się tutaj.</pre>
+</section>
+<section class="card">
+<h2>📝 Research i artykuł</h2>
+<label>Temat</label><input id="topic" value="Praktyczne zastosowania sztucznej inteligencji">
+<label>Odbiorcy</label><input id="audience" value="Początkujący">
+<label>Styl</label><input id="style" value="Konkretny i praktyczny">
+<label>Liczba słów</label><input id="words" type="number" min="100" max="3000" value="300">
+<label>Język</label><select id="language"><option value="pl">Polski</option><option value="en">Angielski</option></select>
+<button onclick="pipeline()">Uruchom pipeline</button>
+<pre id="pipelineResult">Artykuł i wynik operacji pojawią się tutaj.</pre>
+</section>
+</div>
+<section class="card">
+<h2>📚 Kolejka publikacji</h2>
+<button onclick="queue()">Pobierz kolejkę</button>
+<pre id="queueResult">Nie pobrano kolejki.</pre>
+</section>
+<section class="card">
+<h2>🔌 Dostępne API</h2>
+<pre id="routes">Kliknij „Pokaż API”.</pre>
+</section>
+<script>
+const $=id=>document.getElementById(id);
+async function api(url,options={}){
+ const r=await fetch(url,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
+ const text=await r.text();
+ let data;try{data=JSON.parse(text)}catch{data={response:text}}
+ if(!r.ok)throw Error('HTTP '+r.status+': '+JSON.stringify(data));
+ return data;
+}
+async function health(){
+ try{const d=await api('/health');$('status').textContent='ONLINE · '+d.model;$('status').style.color='#8ee6ae'}
+ catch(e){$('status').textContent='BŁĄD · '+e.message;$('status').style.color='#ff9090'}
+}
+async function chat(){
+ $('chatResult').textContent='Oczekiwanie na model…';
+ try{$('chatResult').textContent=JSON.stringify(await api('/api/ai/chat',{method:'POST',body:JSON.stringify({message:$('message').value})}),null,2)}
+ catch(e){$('chatResult').textContent=e.message}
+}
+async function pipeline(){
+ $('pipelineResult').textContent='Research i generowanie trwają…';
+ try{
+  const d=await api('/api/content/pipeline',{method:'POST',body:JSON.stringify({
+   topic:$('topic').value,audience:$('audience').value,style:$('style').value,
+   words:Number($('words').value),language:$('language').value
+  })});
+  $('pipelineResult').textContent=JSON.stringify(d,null,2);
+ }catch(e){$('pipelineResult').textContent=e.message}
+}
+async function queue(){
+ $('queueResult').textContent='Pobieranie…';
+ try{$('queueResult').textContent=JSON.stringify(await api('/api/publication/queue'),null,2)}
+ catch(e){$('queueResult').textContent=e.message}
+}
+async function loadRoutes(){
+ try{$('routes').textContent=JSON.stringify(await api('/'),null,2)}
+ catch(e){$('routes').textContent=e.message}
+}
+health();
+</script>
+</body>
+</html>

@@ -14,6 +14,10 @@ const ChatSchema = z.object({
   system: z.string().trim().max(4000).optional()
 });
 
+app.get('/preview', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
 app.get('/health', (_req, res) => {
   res.json({
     status: 'online',
