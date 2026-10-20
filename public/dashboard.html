@@ -3,99 +3,178 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="dark">
-<title>AI Automation Agent</title>
+<meta name="theme-color" content="#090d16">
+<title>AI Agent — Control Center</title>
 <style>
-:root{font-family:system-ui,sans-serif;color:#e8edf5;background:#10141c}
-*{box-sizing:border-box}body{margin:0 auto;padding:18px;max-width:1000px}
-header,.card{background:#191f2b;border:1px solid #30394a;border-radius:14px;padding:18px;margin-bottom:14px}
-h1{font-size:24px;margin:0 0 8px}h2{font-size:18px;margin-top:0}
-small,.muted{color:#aab6c9}.status{font-weight:700;color:#8ee6ae}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-button{background:#5579e8;color:white;border:0;border-radius:9px;padding:11px 15px;font-weight:650;cursor:pointer}
-button:disabled{opacity:.5}input,textarea,select{width:100%;padding:11px;margin:6px 0 12px;background:#0f141d;border:1px solid #39445a;border-radius:8px;color:#fff}
-textarea{min-height:100px;resize:vertical}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#0c1017;padding:12px;border-radius:8px;max-height:400px;overflow:auto}
-a{color:#9db8ff}label{font-size:14px;color:#c4cede}
+:root{color-scheme:dark;--bg:#090d16;--panel:#111827;--line:#253149;--text:#edf3ff;--muted:#94a3b8;--blue:#7c9cff;--green:#64e6b0}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#182747 0%,var(--bg) 55%);color:var(--text);font:15px system-ui,sans-serif;min-height:100vh}
+main{max-width:1100px;margin:auto;padding:20px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px 0 24px}
+.brand{display:flex;gap:12px;align-items:center}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#7197ff,#b18aff);display:grid;place-items:center;color:#091020;font-size:23px;font-weight:900}
+h1{font-size:21px;margin:0}h2{font-size:17px;margin:0 0 15px}p{line-height:1.6}
+.muted{color:var(--muted);font-size:13px}.status{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:30px;padding:9px 13px;font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}.dot.busy{background:#ffcb70;box-shadow:0 0 12px #ffcb70;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.3;transform:scale(.7)}}@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.card{background:linear-gradient(145deg,#151e2e,#101622);border:1px solid var(--line);border-radius:17px;padding:19px;min-width:0;box-shadow:0 12px 35px #0002}
+.wide{grid-column:1/-1}.topline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:15px}
+.pill{border:1px solid var(--line);border-radius:20px;padding:5px 9px;color:var(--muted);font-size:11px}
+label{display:block;color:#bdc9dd;font-size:13px;margin:11px 0 5px}
+input,textarea,select{width:100%;background:#0a101c;color:var(--text);border:1px solid #2c3a53;border-radius:10px;padding:12px;font:inherit;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #7c9cff20}
+textarea{resize:vertical;min-height:88px}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(110deg,#7295ff,#a18aff);color:#08101e;font-weight:750;transition:transform .15s,filter .15s}
+button:hover{filter:brightness(1.12);transform:translateY(-1px)}button:disabled{opacity:.5;cursor:wait;transform:none}
+.secondary{background:#1d293d;color:var(--text);border:1px solid #34435c}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.result{background:#090e18;border:1px solid #202c40;border-radius:12px;padding:13px;margin-top:14px;min-height:54px;overflow-wrap:anywhere;white-space:pre-wrap;line-height:1.65}
+.result:empty{display:none}
+.typing{display:flex;gap:5px;align-items:center;min-height:24px;color:var(--muted);font-size:13px}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:bounce .8s infinite alternate}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{to{opacity:.3;transform:translateY(-5px)}}
+.progress{height:5px;background:#263149;border-radius:9px;overflow:hidden;margin-top:12px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,#7398ff,#c09aff);transition:width .4s;border-radius:9px}
+.chatlog{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.bubble{padding:12px 14px;border-radius:13px;max-width:95%;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;animation:rise .2s ease}
+.user{align-self:flex-end;background:#24385f;border:1px solid #38558b}.assistant{align-self:flex-start;background:#0a101b;border:1px solid #28354b}
+.bubble small{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
+.metricrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 15px}
+.metric{background:#0b111d;border:1px solid var(--line);border-radius:12px;padding:12px}
+.metric strong{display:block;font-size:17px}.metric span{font-size:11px;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
+a{color:var(--blue)}
+@media(max-width:650px){main{padding:13px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}.metricrow{gap:6px}.metric{padding:9px}.metric strong{font-size:14px}header{padding-top:10px}}
 </style>
 </head>
 <body>
+<main>
 <header>
-<h1>AI Automation Agent</h1>
-<div class="muted">Panel operacyjny · lokalny podgląd HTTP</div>
-<p id="status" class="status">Sprawdzanie serwera…</p>
-<nav>
-<button onclick="health()">Sprawdź serwer</button>
-<button onclick="queue()">Odśwież kolejkę</button>
-<button onclick="loadRoutes()">Pokaż API</button>
-</nav>
+ <div class="brand"><div class="logo">✳</div><div><h1>AI Agent</h1><div class="muted">Control Center · automatyzacja zadań</div></div></div>
+ <div class="status"><span class="dot" id="healthDot"></span><span id="healthText">Łączenie z serwerem…</span></div>
 </header>
+
+<div class="metricrow">
+ <div class="metric"><strong id="metricServer">—</strong><span>STATUS SERWERA</span></div>
+ <div class="metric"><strong id="metricModel">—</strong><span>MODEL AI</span></div>
+ <div class="metric"><strong id="metricTime">—</strong><span>OSTATNIE SPRAWDZENIE</span></div>
+</div>
+
 <div class="grid">
 <section class="card">
-<h2>💬 Czat AI</h2>
-<label>Wiadomość</label>
-<textarea id="message">Odpowiedz krótko po polsku: system działa.</textarea>
-<button onclick="chat()">Wyślij do AI</button>
-<pre id="chatResult">Odpowiedź pojawi się tutaj.</pre>
+ <div class="topline"><h2>✦ Rozmowa z AI</h2><span class="pill">CHAT</span></div>
+ <label for="message">Twoje polecenie</label>
+ <textarea id="message">Przedstaw krótko trzy rzeczy, które może zautomatyzować ten system.</textarea>
+ <div class="actions"><button id="sendBtn" onclick="sendChat()">Wyślij polecenie ↗</button><button class="secondary" onclick="clearChat()">Wyczyść</button></div>
+ <div id="chatLog" class="chatlog"></div>
+ <div id="chatBusy" class="typing" hidden><span></span><span></span><span></span><b>AI analizuje i pisze…</b></div>
 </section>
+
 <section class="card">
-<h2>📝 Research i artykuł</h2>
-<label>Temat</label><input id="topic" value="Praktyczne zastosowania sztucznej inteligencji">
-<label>Odbiorcy</label><input id="audience" value="Początkujący">
-<label>Styl</label><input id="style" value="Konkretny i praktyczny">
-<label>Liczba słów</label><input id="words" type="number" min="100" max="3000" value="300">
-<label>Język</label><select id="language"><option value="pl">Polski</option><option value="en">Angielski</option></select>
-<button onclick="pipeline()">Uruchom pipeline</button>
-<pre id="pipelineResult">Artykuł i wynik operacji pojawią się tutaj.</pre>
+ <div class="topline"><h2>⌘ Generator treści</h2><span class="pill">RESEARCH + AI</span></div>
+ <label for="topic">Temat artykułu</label><input id="topic" value="Praktyczne zastosowania sztucznej inteligencji">
+ <label for="audience">Odbiorcy</label><input id="audience" value="Osoby początkujące">
+ <label for="style">Styl</label><select id="style"><option>Konkretny i praktyczny</option><option>Popularnonaukowy</option><option>Profesjonalny</option><option>Poradnik krok po kroku</option></select>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label for="words">Długość (słowa)</label><input id="words" type="number" min="100" max="3000" value="300"></div><div><label for="language">Język</label><select id="language"><option value="pl">Polski</option><option value="en">Angielski</option></select></div></div>
+ <button id="pipelineBtn" onclick="runPipeline()">Generuj artykuł ↗</button>
+ <div id="pipelineBusy" hidden>
+  <div class="typing" style="margin-top:12px"><span></span><span></span><span></span><b id="pipelineStage">Przygotowanie…</b></div>
+  <div class="progress"><div id="progressBar"></div></div>
+ </div>
+ <div id="pipelineResult" class="result"></div>
+</section>
+
+<section class="card wide">
+ <div class="topline"><h2>▤ Kolejka publikacji</h2><button class="secondary" onclick="loadQueue()">Odśwież</button></div>
+ <div id="queueResult" class="muted">Kliknij „Odśwież”, aby pobrać kolejkę.</div>
+</section>
+
+<section class="card wide">
+ <div class="topline"><h2>⌁ Interfejs API</h2><button class="secondary" onclick="loadApi()">Sprawdź endpointy</button></div>
+ <div id="apiResult" class="muted">Podgląd dostępnych tras serwera.</div>
 </section>
 </div>
-<section class="card">
-<h2>📚 Kolejka publikacji</h2>
-<button onclick="queue()">Pobierz kolejkę</button>
-<pre id="queueResult">Nie pobrano kolejki.</pre>
-</section>
-<section class="card">
-<h2>🔌 Dostępne API</h2>
-<pre id="routes">Kliknij „Pokaż API”.</pre>
-</section>
+<footer>AI Agent · lokalny panel operacyjny · <span id="clock"></span></footer>
+</main>
 <script>
 const $=id=>document.getElementById(id);
+let busyChat=false,busyPipeline=false;
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function api(url,options={}){
  const r=await fetch(url,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
- const text=await r.text();
- let data;try{data=JSON.parse(text)}catch{data={response:text}}
- if(!r.ok)throw Error('HTTP '+r.status+': '+JSON.stringify(data));
+ const raw=await r.text();let data;
+ try{data=JSON.parse(raw)}catch{data={message:raw}}
+ if(!r.ok)throw Error('HTTP '+r.status+' · '+(data.details||data.error||data.message||'Błąd żądania'));
  return data;
 }
-async function health(){
- try{const d=await api('/health');$('status').textContent='ONLINE · '+d.model;$('status').style.color='#8ee6ae'}
- catch(e){$('status').textContent='BŁĄD · '+e.message;$('status').style.color='#ff9090'}
+function post(url,data){return api(url,{method:'POST',body:JSON.stringify(data)})}
+function bubble(who,text,meta=''){
+ const el=document.createElement('div');el.className='bubble '+who;
+ const tag=document.createElement('small');tag.textContent=who==='user'?'TY':meta||'AI';
+ const body=document.createElement('div');body.textContent=text;
+ el.append(tag,body);$('chatLog').append(el);el.scrollIntoView({behavior:'smooth',block:'nearest'});return body;
 }
-async function chat(){
- $('chatResult').textContent='Oczekiwanie na model…';
- try{$('chatResult').textContent=JSON.stringify(await api('/api/ai/chat',{method:'POST',body:JSON.stringify({message:$('message').value})}),null,2)}
- catch(e){$('chatResult').textContent=e.message}
+async function typeText(el,text){
+ el.textContent='';
+ const step=text.length>1200?8:text.length>400?4:2;
+ for(let i=0;i<text.length;i+=step){el.textContent+=text.slice(i,i+step);if(i%40===0)await wait(12)}
+ el.textContent=text;
 }
-async function pipeline(){
- $('pipelineResult').textContent='Research i generowanie trwają…';
+async function sendChat(){
+ if(busyChat)return;
+ const message=$('message').value.trim();if(!message)return;
+ busyChat=true;$('sendBtn').disabled=true;$('chatBusy').hidden=false;
+ bubble('user',message);$('message').value='';
+ const target=bubble('assistant','…','AI · generowanie');
  try{
-  const d=await api('/api/content/pipeline',{method:'POST',body:JSON.stringify({
-   topic:$('topic').value,audience:$('audience').value,style:$('style').value,
-   words:Number($('words').value),language:$('language').value
-  })});
-  $('pipelineResult').textContent=JSON.stringify(d,null,2);
- }catch(e){$('pipelineResult').textContent=e.message}
+  const d=await post('/api/ai/chat',{message});
+  await typeText(target,d.reply||JSON.stringify(d));
+  target.parentElement.firstChild.textContent='AI · '+(d.model||'odpowiedź');
+ }catch(e){target.textContent='Nie udało się wykonać polecenia: '+e.message}
+ finally{busyChat=false;$('sendBtn').disabled=false;$('chatBusy').hidden=true}
 }
-async function queue(){
- $('queueResult').textContent='Pobieranie…';
+function clearChat(){$('chatLog').replaceChildren()}
+$('message').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();sendChat()}});
+async function runPipeline(){
+ if(busyPipeline)return;
+ const topic=$('topic').value.trim();if(!topic){$('pipelineResult').textContent='Podaj temat.';return}
+ busyPipeline=true;$('pipelineBtn').disabled=true;$('pipelineBusy').hidden=false;$('pipelineResult').textContent='';
+ const stages=['Przygotowanie tematu…','Wyszukiwanie źródeł…','Analiza materiałów…','AI tworzy artykuł…','Zapisywanie wyniku…'];
+ let stage=0,progress=4;
+ $('pipelineStage').textContent=stages[0];$('progressBar').style.width=progress+'%';
+ const ticker=setInterval(()=>{stage=(stage+1)%stages.length;$('pipelineStage').textContent=stages[stage];progress=Math.min(92,progress+3+Math.random()*7);$('progressBar').style.width=progress+'%'},1800);
+ try{
+  const d=await post('/api/content/pipeline',{topic,audience:$('audience').value,style:$('style').value,words:Number($('words').value),language:$('language').value});
+  $('progressBar').style.width='100%';$('pipelineStage').textContent='Gotowe';
+  const summary='Status: '+(d.success?'SUKCES':'zakończono')+'\nModel: '+(d.model||'—')+'\nŹródła: '+(d.sourceCount??'—')+'\nPlik: '+(d.file||'—')+'\n\n'+(d.article||JSON.stringify(d,null,2));
+  $('pipelineResult').textContent=summary;
+ }catch(e){$('pipelineResult').textContent='Błąd pipeline’u: '+e.message}
+ finally{clearInterval(ticker);busyPipeline=false;$('pipelineBtn').disabled=false;$('pipelineBusy').hidden=true}
+}
+async function health(){
+ try{
+  const d=await api('/health');$('healthText').textContent='SERWER ONLINE';$('healthDot').classList.remove('busy');
+  $('metricServer').textContent='ONLINE';$('metricModel').textContent=d.model||'AI';$('metricTime').textContent=new Date().toLocaleTimeString('pl-PL');
+ }catch(e){
+  $('healthText').textContent='BRAK POŁĄCZENIA';$('healthDot').classList.add('busy');$('metricServer').textContent='OFFLINE';
+ }
+}
+async function loadQueue(){
+ $('queueResult').textContent='Pobieranie kolejki…';
  try{$('queueResult').textContent=JSON.stringify(await api('/api/publication/queue'),null,2)}
- catch(e){$('queueResult').textContent=e.message}
+ catch(e){$('queueResult').textContent='Błąd kolejki: '+e.message}
 }
-async function loadRoutes(){
- try{$('routes').textContent=JSON.stringify(await api('/'),null,2)}
- catch(e){$('routes').textContent=e.message}
+async function loadApi(){
+ $('apiResult').textContent='Pobieranie…';
+ try{
+  const d=await api('/');
+  const pre=document.createElement('pre');pre.className='result';pre.textContent=JSON.stringify(d,null,2);
+  $('apiResult').replaceChildren(pre);
+ }catch(e){$('apiResult').textContent=e.message}
 }
-health();
+$('clock').textContent=new Date().toLocaleDateString('pl-PL');
+health();setInterval(health,20000);
 </script>
 </body>
 </html>
