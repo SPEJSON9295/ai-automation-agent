@@ -113,11 +113,11 @@ test('API: testy integracyjne i odpornościowe', async t => {
     );
   });
 
-  await t.test('serwer odrzuca żądanie JSON większe niż 1 MB', async () => {
+  await t.test('serwer odrzuca żądanie JSON większe niż 5 MB', async () => {
     const response = await fetch(base + '/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'x'.repeat(1024 * 1024 + 100) })
+      body: JSON.stringify({ message: 'x'.repeat(6 * 1024 * 1024) })
     });
     assert.equal(response.status, 413);
   });
